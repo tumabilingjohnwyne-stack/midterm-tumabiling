@@ -56,7 +56,7 @@ const DOC_CONFIG = {
   const rejectionReasonInput = document.getElementById("rejectionReasonInput");
   const deleteBtn = document.getElementById("deleteBtn");
   
-  // Tab Navigation
+  // Navigation Tabs Handling
   navBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       navBtns.forEach(b => b.classList.remove("active"));
@@ -73,14 +73,12 @@ const DOC_CONFIG = {
   });
   
   // ==========================================
-  // 2. Notification System (On-page Banners)
+  // 2. Inline Banner Alerts (Red/Green)
   // ==========================================
   function showAlert(message, type = "error") {
     alertBanner.textContent = message;
     alertBanner.className = `alert-banner ${type === "success" ? "alert-success" : "alert-error"}`;
     alertBanner.style.display = "block";
-  
-    // Auto-scroll to top so alert is clearly seen
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   
@@ -90,7 +88,7 @@ const DOC_CONFIG = {
   }
   
   // ==========================================
-  // 3. Calculation & Reference Helpers
+  // 3. Date & Reference Number Helpers
   // ==========================================
   function calculateReleaseDate(startDateStr, workingDays) {
     let currentDate = new Date(startDateStr);
@@ -142,7 +140,7 @@ const DOC_CONFIG = {
   }
   
   // ==========================================
-  // 4. Storage Functions
+  // 4. Persistence
   // ==========================================
   function loadRequests() {
     const storedData = localStorage.getItem(STORAGE_KEY);
@@ -154,34 +152,30 @@ const DOC_CONFIG = {
   }
   
   // ==========================================
-  // 5. Validation Rules
+  // 5. Validation Logic
   // ==========================================
-  
-  // Validates new request form inputs
   function validateRequestForm(name, studentId, course, docType, purpose) {
-    // Rule: Non-empty & non-whitespace check
     if (!name || !studentId || !course || !docType || !purpose) {
       return "All form fields are required.";
     }
   
-    // Rule: Name letters only (spaces, dots, hyphens allowed)
+    // Letters, spaces, dots, and hyphens only
     const nameRegex = /^[a-zA-Z\s.-]+$/;
     if (!nameRegex.test(name)) {
       return "Student name must contain letters, spaces, dots, or hyphens only.";
     }
   
-    // Rule: Student ID pattern (e.g. 2026-00123 or digits-only)
+    // Pattern: 2026-00123 OR digits only (e.g. 202600123)
     const studentIdRegex = /^\d{4}-\d{1,6}$\vert{}^\d{4,10}$/;
     if (!studentIdRegex.test(studentId)) {
       return "Student ID must follow a format like 2026-00123 or digits only.";
     }
   
-    // Rule: Purpose min length 5
     if (purpose.length < 5) {
       return "Purpose must be at least 5 characters long.";
     }
   
-    // Rule (1): Prevent duplicate active request for same document type
+    // Rule 1: Prevent submission if existing request for same doc is Submitted or Processing
     const activeDuplicate = requests.find(req => 
       req.studentId.toLowerCase() === studentId.toLowerCase() &&
       req.documentType === docType &&
@@ -196,7 +190,7 @@ const DOC_CONFIG = {
   }
   
   // ==========================================
-  // 6. Action Workflow & Table Rendering
+  // 6. UI Rendering & Filter Logic
   // ==========================================
   function getBadgeClass(status) {
     switch (status) {
@@ -245,13 +239,13 @@ const DOC_CONFIG = {
     const currentReq = requests[reqIndex];
     const today = new Date().toISOString().split("T")[0];
   
-    // Rule (2): Claimed status can only be set if currently Ready for Pickup
+    // Rule 2: Claimed status requires Ready for Pickup first
     if (newStatus === "Claimed" && currentReq.status !== "Ready for Pickup") {
       showAlert(`Request ${refNum} can only be marked as Claimed if it is Ready for Pickup.`, "error");
       return;
     }
   
-    // Rule (3): Rejection requires non-empty reason
+    // Rule 3: Rejection reason required
     if (newStatus === "Rejected") {
       const reason = prompt("Please enter the reason for rejection:");
       if (reason === null) return;
@@ -269,10 +263,7 @@ const DOC_CONFIG = {
     requests[reqIndex].status = newStatus;
     saveRequests();
     renderRequests();
-  
-    if (typeof renderSummary === "function") {
-      renderSummary();
-    }
+    renderSummary();
   
     showAlert(`Request ${refNum} status updated to '${newStatus}'.`, "success");
   }
@@ -284,6 +275,7 @@ const DOC_CONFIG = {
   
     requestsTableBody.innerHTML = "";
   
+    // Combine Search and Dropdown Filters
     const filteredRequests = requests.filter(req => {
       const matchesSearch = 
         req.referenceNumber.toLowerCase().includes(query) ||
@@ -299,7 +291,9 @@ const DOC_CONFIG = {
     if (filteredRequests.length === 0) {
       requestsTableBody.innerHTML = `
         <tr>
-          <td colspan="11" style="text-align: center; color: #64748b;">No document requests found.</td>
+          <td colspan="11" style="text-align: center; color: #64748b; padding: 20px;">
+            No requests found matching the filter criteria.
+          </td>
         </tr>`;
       return;
     }
@@ -307,8 +301,6 @@ const DOC_CONFIG = {
     filteredRequests.forEach(req => {
       const fee = req.fee || (DOC_CONFIG[req.documentType] ? DOC_CONFIG[req.documentType].fee : 0);
       const tr = document.createElement("tr");
-  
-      const actionButtons = renderActionButtons(req);
   
       tr.innerHTML = `
         <td><strong>${req.referenceNumber}</strong></td>
@@ -323,7 +315,7 @@ const DOC_CONFIG = {
         <td><span class="badge ${getBadgeClass(req.status)}">${req.status}</span></td>
         <td>
           <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center;">
-            ${actionButtons}
+            ${renderActionButtons(req)}
             <button class="btn btn-secondary btn-details" onclick="openDetailsModal('${req.referenceNumber}')">Details</button>
           </div>
         </td>
@@ -334,8 +326,19 @@ const DOC_CONFIG = {
   }
   
   function renderSummary() {
-    const statusCounts = { "Submitted": 0, "Processing": 0, "Ready for Pickup": 0, "Claimed": 0, "Rejected": 0 };
-    const docTypeCounts = { "Certificate of Enrollment": 0, "Transcript of Records": 0, "Good Moral Certificate": 0 };
+    const statusCounts = {
+      "Submitted": 0,
+      "Processing": 0,
+      "Ready for Pickup": 0,
+      "Claimed": 0,
+      "Rejected": 0
+    };
+  
+    const docTypeCounts = {
+      "Certificate of Enrollment": 0,
+      "Transcript of Records": 0,
+      "Good Moral Certificate": 0
+    };
   
     requests.forEach(req => {
       if (statusCounts[req.status] !== undefined) statusCounts[req.status]++;
@@ -358,10 +361,10 @@ const DOC_CONFIG = {
   }
   
   // ==========================================
-  // 7. Form & Modal Event Handlers
+  // 7. Form & Modal Handlers
   // ==========================================
   
-  // Create Request Form Submit Handler
+  // Create Request Form
   requestForm.addEventListener("submit", (e) => {
     e.preventDefault();
     clearAlert();
@@ -372,7 +375,6 @@ const DOC_CONFIG = {
     const selectedType = docTypeSelect.value;
     const purpose = document.getElementById("purpose").value.trim();
   
-    // Validate form inputs
     const validationError = validateRequestForm(name, studentId, course, selectedType, purpose);
     if (validationError) {
       showAlert(validationError, "error");
@@ -401,6 +403,7 @@ const DOC_CONFIG = {
     requests.unshift(newRequest);
     saveRequests();
     renderRequests();
+    renderSummary();
   
     requestForm.reset();
     previewCard.style.display = "none";
@@ -408,7 +411,7 @@ const DOC_CONFIG = {
     showAlert(`Request submitted successfully! Reference Number: ${newRequest.referenceNumber}`, "success");
   });
   
-  // Modal Logic
+  // Modal Actions
   function openDetailsModal(refNum) {
     clearAlert();
     const req = requests.find(r => r.referenceNumber === refNum);
@@ -462,7 +465,7 @@ const DOC_CONFIG = {
     toggleRejectionField(e.target.value);
   });
   
-  // Save status from modal with validation rules
+  // Update Status from Modal
   updateStatusForm.addEventListener("submit", (e) => {
     e.preventDefault();
     clearAlert();
@@ -474,13 +477,13 @@ const DOC_CONFIG = {
     const newStatus = updateStatusSelect.value;
     const today = new Date().toISOString().split("T")[0];
   
-    // Rule (2): Ready for Pickup check for Claimed status
+    // Rule 2 check
     if (newStatus === "Claimed" && currentReq.status !== "Ready for Pickup") {
       showAlert(`Cannot mark ${selectedRequestId} as Claimed unless it is currently 'Ready for Pickup'.`, "error");
       return;
     }
   
-    // Rule (3): Rejection reason required
+    // Rule 3 check
     if (newStatus === "Rejected") {
       const reason = rejectionReasonInput.value.trim();
       if (!reason) {
@@ -501,6 +504,7 @@ const DOC_CONFIG = {
     requests[reqIndex].status = newStatus;
     saveRequests();
     renderRequests();
+    renderSummary();
     detailsModal.style.display = "none";
   
     showAlert(`Request ${selectedRequestId} status successfully updated to '${newStatus}'.`, "success");
@@ -512,6 +516,7 @@ const DOC_CONFIG = {
       requests = requests.filter(r => r.referenceNumber !== selectedRequestId);
       saveRequests();
       renderRequests();
+      renderSummary();
       detailsModal.style.display = "none";
       showAlert(`Record ${selectedRequestId} deleted successfully.`, "success");
     }
@@ -522,13 +527,14 @@ const DOC_CONFIG = {
     if (event.target === detailsModal) detailsModal.style.display = "none";
   });
   
-  // Filters
+  // Real-time Search & Filter Event Listeners
   searchInput.addEventListener("input", renderRequests);
   statusFilter.addEventListener("change", renderRequests);
   docTypeFilter.addEventListener("change", renderRequests);
   
-  // App Init
+  // App Initialization
   document.addEventListener("DOMContentLoaded", () => {
     loadRequests();
     renderRequests();
+    renderSummary();
   });
