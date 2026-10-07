@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Document Request Tracker</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="container header-container">
+      <div>
+        <h1>School Registrar Request Tracker</h1>
+        <p>Manage and track document requests for students</p>
+      </div>
+      <!-- Section Navigation -->
+      <nav class="nav-tabs">
+        <button class="nav-btn active" data-target="requestSection">New Request</button>
+        <button class="nav-btn" data-target="registrarSection">Registrar Dashboard</button>
+        <button class="nav-btn" data-target="summarySection">Summary</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ================= SECTION 1: REQUEST FORM ================= -->
+    <div id="requestSection" class="tab-content active">
+      <!-- Pricing Info Card -->
+      <section class="card info-card">
+        <h2>Document Rates & Processing Time</h2>
+        <div class="pricing-grid">
+          <div class="pricing-item">
+            <strong>Certificate of Enrollment</strong>
+            <span class="price">₱50</span>
+            <span class="days">2 Working Days</span>
+          </div>
+          <div class="pricing-item">
+            <strong>Transcript of Records</strong>
+            <span class="price">₱150</span>
+            <span class="days">5 Working Days</span>
+          </div>
+          <div class="pricing-item">
+            <strong>Good Moral Certificate</strong>
+            <span class="price">₱100</span>
+            <span class="days">3 Working Days</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Form Card -->
+      <section class="card">
+        <h2>New Document Request</h2>
+        <form id="requestForm">
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label for="studentName">Student Name *</label>
+              <input type="text" id="studentName" required placeholder="e.g., Juan Dela Cruz">
+            </div>
+
+            <div class="form-group">
+              <label for="studentId">Student ID *</label>
+              <input type="text" id="studentId" required placeholder="e.g., 2026-01234">
+            </div>
+
+            <div class="form-group">
+              <label for="course">Course / Major *</label>
+              <input type="text" id="course" required placeholder="e.g., BS Information Technology">
+            </div>
+
+            <div class="form-group">
+              <label for="docType">Document Requested *</label>
+              <select id="docType" required>
+                <option value="">-- Select Document --</option>
+                <option value="Certificate of Enrollment">Certificate of Enrollment (₱50 | 2 Days)</option>
+                <option value="Transcript of Records">Transcript of Records (₱150 | 5 Days)</option>
+                <option value="Good Moral Certificate">Good Moral Certificate (₱100 | 3 Days)</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="purpose">Purpose *</label>
+              <textarea id="purpose" rows="2" required placeholder="e.g., Scholarship application, Employment, Transfer"></textarea>
+            </div>
+
+          </div>
+
+          <!-- Live Fee & Expected Release Date Preview -->
+          <div id="previewCard" class="preview-box" style="display: none;">
+            <h4>Request Summary Preview</h4>
+            <p><strong>Fee:</strong> <span id="previewFee">₱0</span></p>
+            <p><strong>Expected Release Date:</strong> <span id="previewReleaseDate">-</span> <small style="color: #64748b;">(Excludes Weekends)</small></p>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Submit Request</button>
+        </form>
+      </section>
+    </div>
+
+    <!-- ================= SECTION 2: REGISTRAR DASHBOARD ================= -->
+    <div id="registrarSection" class="tab-content">
+      <section class="card">
+        <div class="filter-header">
+          <h2>Document Requests List</h2>
+          <div class="filter-controls">
+            <input type="text" id="searchInput" placeholder="Search name, ID, or ref #...">
+            
+            <!-- Document Type Filter -->
+            <select id="docTypeFilter">
+              <option value="All">All Document Types</option>
+              <option value="Certificate of Enrollment">Certificate of Enrollment</option>
+              <option value="Transcript of Records">Transcript of Records</option>
+              <option value="Good Moral Certificate">Good Moral Certificate</option>
+            </select>
+
+            <!-- Status Filter -->
+            <select id="statusFilter">
+              <option value="All">All Statuses</option>
+              <option value="Submitted">Submitted</option>
+              <option value="Processing">Processing</option>
+              <option value="Ready for Pickup">Ready for Pickup</option>
+              <option value="Claimed">Claimed</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Ref Number</th>
+                <th>Student Name</th>
+                <th>Student ID</th>
+                <th>Course</th>
+                <th>Document</th>
+                <th>Fee</th>
+                <th>Date Requested</th>
+                <th>Expected Release</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="requestsTableBody">
+              <!-- Dynamically loaded rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= SECTION 3: SUMMARY SECTION ================= -->
+    <div id="summarySection" class="tab-content">
+      <section class="card">
+        <h2>Requests Summary & Statistics</h2>
+        
+        <!-- Count per Status Container -->
+        <div class="summary-group">
+          <h3>Requests Count per Status</h3>
+          <div id="statusSummaryContainer" class="summary-grid">
+            <!-- Dynamically loaded via JS -->
+          </div>
+        </div>
+
+        <!-- Count per Document Type Container -->
+        <div class="summary-group" style="margin-top: 24px;">
+          <h3>Requests Count per Document Type</h3>
+          <div id="docTypeSummaryContainer" class="summary-grid">
+            <!-- Dynamically loaded via JS -->
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Request Details / Update Modal -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModal">&times;</span>
+      <h2 id="modalRefNum">Request Details</h2>
+      <hr>
+
+      <div class="modal-body">
+        <p><strong>Student Name:</strong> <span id="modalStudentName"></span></p>
+        <p><strong>Student ID:</strong> <span id="modalStudentId"></span></p>
+        <p><strong>Course:</strong> <span id="modalCourse"></span></p>
+        <p><strong>Document:</strong> <span id="modalDocType"></span></p>
+        <p><strong>Fee:</strong> <span id="modalFee"></span></p>
+        <p><strong>Purpose:</strong> <span id="modalPurpose"></span></p>
+        <p><strong>Date Requested:</strong> <span id="modalDateRequested"></span></p>
+        <p><strong>Expected Release Date:</strong> <span id="modalExpectedRelease"></span></p>
+        <p><strong>Current Status:</strong> <span id="modalStatusBadge"></span></p>
+        <p id="modalClaimDateRow" style="display: none;"><strong>Claim Date:</strong> <span id="modalClaimDate"></span></p>
+        <p id="modalRejectionRow" style="display: none;"><strong>Rejection Reason:</strong> <span id="modalRejectionReason"></span></p>
+
+        <hr>
+
+        <!-- Status Update Section -->
+        <form id="updateStatusForm">
+          <h3>Update Status</h3>
+          <div class="form-group">
+            <label for="updateStatusSelect">Change Status:</label>
+            <select id="updateStatusSelect" required>
+              <option value="Submitted">Submitted</option>
+              <option value="Processing">Processing</option>
+              <option value="Ready for Pickup">Ready for Pickup</option>
+              <option value="Claimed">Claimed</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+
+          <!-- Extra Input for Rejection -->
+          <div class="form-group" id="rejectionInputGroup" style="display: none;">
+            <label for="rejectionReasonInput">Reason for Rejection *</label>
+            <textarea id="rejectionReasonInput" rows="2" placeholder="State reason for rejecting request..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Status Update</button>
+          <button type="button" id="deleteBtn" class="btn btn-danger" style="float: right;">Delete Record</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
