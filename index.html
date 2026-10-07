@@ -17,6 +17,7 @@
       </div>
       <nav class="nav-tabs">
         <button class="nav-btn active" data-target="requestSection">New Request</button>
+        <button class="nav-btn" data-target="statusLookupSection">Student Status</button>
         <button class="nav-btn" data-target="registrarSection">Registrar Dashboard</button>
         <button class="nav-btn" data-target="summarySection">Summary</button>
       </nav>
@@ -100,7 +101,33 @@
       </section>
     </div>
 
-    <!-- ================= SECTION 2: REGISTRAR DASHBOARD ================= -->
+    <!-- ================= SECTION 2: STUDENT STATUS LOOKUP ================= -->
+    <div id="statusLookupSection" class="tab-content">
+      <section class="card">
+        <h2>Check Request Status</h2>
+        <p style="margin-bottom: 16px; color: #64748b;">
+          Enter your reference number below to check the current status of your document request.
+        </p>
+
+        <form id="statusLookupForm" style="display: flex; gap: 10px; max-width: 500px; margin-bottom: 20px;">
+          <input type="text" id="lookupRefInput" placeholder="e.g., REQ-2026-0001" style="flex: 1; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 5px;">
+          <button type="submit" class="btn btn-primary">Check Status</button>
+        </form>
+
+        <div id="lookupMessage" style="display: none; padding: 12px; border-radius: 6px; font-weight: 600; margin-bottom: 16px;"></div>
+
+        <div id="statusResultCard" class="preview-box" style="display: none;">
+          <h4>Request Details</h4>
+          <p><strong>Status:</strong> <span id="resultStatusBadge"></span></p>
+          <p><strong>Fee:</strong> <span id="resultFee"></span></p>
+          <p><strong>Expected Release Date:</strong> <span id="resultReleaseDate"></span></p>
+          <p id="resultClaimDateRow" style="display: none;"><strong>Claim Date:</strong> <span id="resultClaimDate"></span></p>
+          <p id="resultRejectionRow" style="display: none;"><strong>Rejection Reason:</strong> <span id="resultRejectionReason" style="color: #b91c1c;"></span></p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= SECTION 3: REGISTRAR DASHBOARD ================= -->
     <div id="registrarSection" class="tab-content">
       <section class="card">
         <div class="filter-header">
@@ -151,7 +178,7 @@
       </section>
     </div>
 
-    <!-- ================= SECTION 3: SUMMARY DASHBOARD ================= -->
+    <!-- ================= SECTION 4: SUMMARY DASHBOARD ================= -->
     <div id="summarySection" class="tab-content">
       <section class="card">
         <h2>Requests Summary & Statistics</h2>
@@ -170,7 +197,7 @@
 
   </main>
 
-  <!-- Modal -->
+  <!-- Details Modal -->
   <div id="detailsModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" id="closeModal">&times;</span>

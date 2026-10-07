@@ -32,6 +32,19 @@ const DOC_CONFIG = {
   const statusSummaryContainer = document.getElementById("statusSummaryContainer");
   const docTypeSummaryContainer = document.getElementById("docTypeSummaryContainer");
   
+  // Student Status Lookup References
+  const statusLookupForm = document.getElementById("statusLookupForm");
+  const lookupRefInput = document.getElementById("lookupRefInput");
+  const lookupMessage = document.getElementById("lookupMessage");
+  const statusResultCard = document.getElementById("statusResultCard");
+  const resultStatusBadge = document.getElementById("resultStatusBadge");
+  const resultFee = document.getElementById("resultFee");
+  const resultReleaseDate = document.getElementById("resultReleaseDate");
+  const resultClaimDateRow = document.getElementById("resultClaimDateRow");
+  const resultClaimDate = document.getElementById("resultClaimDate");
+  const resultRejectionRow = document.getElementById("resultRejectionRow");
+  const resultRejectionReason = document.getElementById("resultRejectionReason");
+  
   // Modal Elements
   const detailsModal = document.getElementById("detailsModal");
   const closeModalBtn = document.getElementById("closeModal");
@@ -159,13 +172,11 @@ const DOC_CONFIG = {
       return "All form fields are required.";
     }
   
-    // Letters, spaces, dots, and hyphens only
     const nameRegex = /^[a-zA-Z\s.-]+$/;
     if (!nameRegex.test(name)) {
       return "Student name must contain letters, spaces, dots, or hyphens only.";
     }
   
-    // Pattern: 2026-00123 OR digits only (e.g. 202600123)
     const studentIdRegex = /^\d{4}-\d{1,6}$\vert{}^\d{4,10}$/;
     if (!studentIdRegex.test(studentId)) {
       return "Student ID must follow a format like 2026-00123 or digits only.";
@@ -175,7 +186,6 @@ const DOC_CONFIG = {
       return "Purpose must be at least 5 characters long.";
     }
   
-    // Rule 1: Prevent submission if existing request for same doc is Submitted or Processing
     const activeDuplicate = requests.find(req => 
       req.studentId.toLowerCase() === studentId.toLowerCase() &&
       req.documentType === docType &&
@@ -239,13 +249,11 @@ const DOC_CONFIG = {
     const currentReq = requests[reqIndex];
     const today = new Date().toISOString().split("T")[0];
   
-    // Rule 2: Claimed status requires Ready for Pickup first
     if (newStatus === "Claimed" && currentReq.status !== "Ready for Pickup") {
       showAlert(`Request ${refNum} can only be marked as Claimed if it is Ready for Pickup.`, "error");
       return;
     }
   
-    // Rule 3: Rejection reason required
     if (newStatus === "Rejected") {
       const reason = prompt("Please enter the reason for rejection:");
       if (reason === null) return;
@@ -275,7 +283,6 @@ const DOC_CONFIG = {
   
     requestsTableBody.innerHTML = "";
   
-    // Combine Search and Dropdown Filters
     const filteredRequests = requests.filter(req => {
       const matchesSearch = 
         req.referenceNumber.toLowerCase().includes(query) ||
@@ -361,7 +368,61 @@ const DOC_CONFIG = {
   }
   
   // ==========================================
-  // 7. Form & Modal Handlers
+  // 7. Student Status Lookup
+  // ==========================================
+  function resetLookupView() {
+    lookupMessage.style.display = "none";
+    statusResultCard.style.display = "none";
+    resultClaimDateRow.style.display = "none";
+    resultRejectionRow.style.display = "none";
+  }
+  
+  statusLookupForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    resetLookupView();
+  
+    const refInput = lookupRefInput.value.trim();
+  
+    if (!refInput) {
+      lookupMessage.textContent = "Please enter a reference number.";
+      lookupMessage.style.backgroundColor = "#fee2e2";
+      lookupMessage.style.color = "#b91c1c";
+      lookupMessage.style.display = "block";
+      return;
+    }
+  
+    const match = requests.find(req => req.referenceNumber.toLowerCase() === refInput.toLowerCase());
+  
+    if (!match) {
+      lookupMessage.textContent = "Reference number not found.";
+      lookupMessage.style.backgroundColor = "#fee2e2";
+      lookupMessage.style.color = "#b91c1c";
+      lookupMessage.style.display = "block";
+      return;
+    }
+  
+    const fee = match.fee || (DOC_CONFIG[match.documentType] ? DOC_CONFIG[match.documentType].fee : 0);
+  
+    resultStatusBadge.textContent = match.status;
+    resultStatusBadge.className = `badge ${getBadgeClass(match.status)}`;
+    resultFee.textContent = `₱${fee}`;
+    resultReleaseDate.textContent = match.expectedReleaseDate;
+  
+    if (match.status === "Claimed" && match.claimDate) {
+      resultClaimDate.textContent = match.claimDate;
+      resultClaimDateRow.style.display = "block";
+    }
+  
+    if (match.status === "Rejected" && match.rejectionReason) {
+      resultRejectionReason.textContent = match.rejectionReason;
+      resultRejectionRow.style.display = "block";
+    }
+  
+    statusResultCard.style.display = "block";
+  });
+  
+  // ==========================================
+  // 8. Form & Modal Handlers
   // ==========================================
   
   // Create Request Form
@@ -477,13 +538,11 @@ const DOC_CONFIG = {
     const newStatus = updateStatusSelect.value;
     const today = new Date().toISOString().split("T")[0];
   
-    // Rule 2 check
     if (newStatus === "Claimed" && currentReq.status !== "Ready for Pickup") {
       showAlert(`Cannot mark ${selectedRequestId} as Claimed unless it is currently 'Ready for Pickup'.`, "error");
       return;
     }
   
-    // Rule 3 check
     if (newStatus === "Rejected") {
       const reason = rejectionReasonInput.value.trim();
       if (!reason) {
