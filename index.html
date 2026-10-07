@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrar Document Request Tracker</title>
+  <title>School Registrar Request Tracker</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+  <!-- Header & Navigation -->
   <header class="app-header">
     <div class="container header-container">
       <div>
         <h1>School Registrar Request Tracker</h1>
         <p>Manage and track document requests for students</p>
       </div>
-      <!-- Section Navigation -->
       <nav class="nav-tabs">
         <button class="nav-btn active" data-target="requestSection">New Request</button>
         <button class="nav-btn" data-target="registrarSection">Registrar Dashboard</button>
@@ -25,9 +25,11 @@
 
   <main class="container">
 
-    <!-- ================= SECTION 1: REQUEST FORM ================= -->
+    <!-- Global Notification Banner -->
+    <div id="alertBanner" class="alert-banner" style="display: none;"></div>
+
+    <!-- ================= SECTION 1: NEW REQUEST FORM ================= -->
     <div id="requestSection" class="tab-content active">
-      <!-- Pricing Info Card -->
       <section class="card info-card">
         <h2>Document Rates & Processing Time</h2>
         <div class="pricing-grid">
@@ -49,10 +51,10 @@
         </div>
       </section>
 
-      <!-- Form Card -->
       <section class="card">
         <h2>New Document Request</h2>
-        <form id="requestForm">
+
+        <form id="requestForm" novalidate>
           <div class="form-grid">
 
             <div class="form-group">
@@ -61,8 +63,8 @@
             </div>
 
             <div class="form-group">
-              <label for="studentId">Student ID *</label>
-              <input type="text" id="studentId" required placeholder="e.g., 2026-01234">
+              <label for="studentId">Student ID * <small style="color: #64748b;">(e.g., 2026-00123 or digits)</small></label>
+              <input type="text" id="studentId" required placeholder="e.g., 2026-00123">
             </div>
 
             <div class="form-group">
@@ -81,13 +83,12 @@
             </div>
 
             <div class="form-group full-width">
-              <label for="purpose">Purpose *</label>
+              <label for="purpose">Purpose * <small style="color: #64748b;">(Min. 5 characters)</small></label>
               <textarea id="purpose" rows="2" required placeholder="e.g., Scholarship application, Employment, Transfer"></textarea>
             </div>
 
           </div>
 
-          <!-- Live Fee & Expected Release Date Preview -->
           <div id="previewCard" class="preview-box" style="display: none;">
             <h4>Request Summary Preview</h4>
             <p><strong>Fee:</strong> <span id="previewFee">₱0</span></p>
@@ -107,7 +108,6 @@
           <div class="filter-controls">
             <input type="text" id="searchInput" placeholder="Search name, ID, or ref #...">
             
-            <!-- Document Type Filter -->
             <select id="docTypeFilter">
               <option value="All">All Document Types</option>
               <option value="Certificate of Enrollment">Certificate of Enrollment</option>
@@ -115,7 +115,6 @@
               <option value="Good Moral Certificate">Good Moral Certificate</option>
             </select>
 
-            <!-- Status Filter -->
             <select id="statusFilter">
               <option value="All">All Statuses</option>
               <option value="Submitted">Submitted</option>
@@ -127,7 +126,6 @@
           </div>
         </div>
 
-        <!-- Requests Table -->
         <div class="table-responsive">
           <table>
             <thead>
@@ -140,44 +138,39 @@
                 <th>Fee</th>
                 <th>Date Requested</th>
                 <th>Expected Release</th>
+                <th>Claim Date</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="requestsTableBody">
-              <!-- Dynamically loaded rows -->
+              <!-- Dynamic Rows -->
             </tbody>
           </table>
         </div>
       </section>
     </div>
 
-    <!-- ================= SECTION 3: SUMMARY SECTION ================= -->
+    <!-- ================= SECTION 3: SUMMARY DASHBOARD ================= -->
     <div id="summarySection" class="tab-content">
       <section class="card">
         <h2>Requests Summary & Statistics</h2>
         
-        <!-- Count per Status Container -->
         <div class="summary-group">
           <h3>Requests Count per Status</h3>
-          <div id="statusSummaryContainer" class="summary-grid">
-            <!-- Dynamically loaded via JS -->
-          </div>
+          <div id="statusSummaryContainer" class="summary-grid"></div>
         </div>
 
-        <!-- Count per Document Type Container -->
         <div class="summary-group" style="margin-top: 24px;">
           <h3>Requests Count per Document Type</h3>
-          <div id="docTypeSummaryContainer" class="summary-grid">
-            <!-- Dynamically loaded via JS -->
-          </div>
+          <div id="docTypeSummaryContainer" class="summary-grid"></div>
         </div>
       </section>
     </div>
 
   </main>
 
-  <!-- Request Details / Update Modal -->
+  <!-- Modal -->
   <div id="detailsModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" id="closeModal">&times;</span>
@@ -199,7 +192,6 @@
 
         <hr>
 
-        <!-- Status Update Section -->
         <form id="updateStatusForm">
           <h3>Update Status</h3>
           <div class="form-group">
@@ -213,14 +205,15 @@
             </select>
           </div>
 
-          <!-- Extra Input for Rejection -->
           <div class="form-group" id="rejectionInputGroup" style="display: none;">
             <label for="rejectionReasonInput">Reason for Rejection *</label>
             <textarea id="rejectionReasonInput" rows="2" placeholder="State reason for rejecting request..."></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary">Save Status Update</button>
-          <button type="button" id="deleteBtn" class="btn btn-danger" style="float: right;">Delete Record</button>
+          <div style="margin-top: 16px;">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" id="deleteBtn" class="btn btn-danger" style="float: right;">Delete Record</button>
+          </div>
         </form>
       </div>
     </div>
